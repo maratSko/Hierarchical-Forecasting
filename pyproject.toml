@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "hierarchical-forecasting"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas",
+    "numpy",
+    "statsmodels",
+    "prophet",
+    "scikit-learn",
+    "scipy",
+    "plotly",
+    "matplotlib",
+    "tqdm",
+    "pmdarima",
+    "dask[distributed]",
+    "python-dateutil",
+]
+
+[tool.setuptools]
+py-modules = ["Tree", "Leaf", "utils", "forecast_prophet", "forecast_sarimax", "forecast_ucm"]

@@ -43,14 +43,12 @@ class Forecast_UCM:
         """
         self.dfData = dfData    # data , [0] to be forecasted, index must be datetime index
         self.vY = dfData.y.dropna().values
-        self.srY=self.dfData.y[:len(self.vY)]      
-        self.exog_vars=self.dfData[['price','christmas',
-                        'snap','holidays'
-                        ]][:len(self.vY)]
-        self.exog_vars_future=dfData[['price','christmas',
-                        'snap','holidays'
-                        ]][len(self.vY):]
+        self.srY=self.dfData.y[:len(self.vY)]
+        exog_cols = [c for c in dfData.columns if c != 'y']
+        self.exog_vars = self.dfData[exog_cols][:len(self.vY)] if exog_cols else None
+        self.exog_vars_future = dfData[exog_cols][len(self.vY):] if exog_cols else None
 
+        self.sTransform = None
         self.sModel=sModel
         self.sFreq = dfData.index.inferred_freq                
         self.vYhatOoS = None
@@ -127,8 +125,6 @@ class Forecast_UCM:
         
         if self.sTransform=='log':
             self.vY=np.log(self.vY + 1e-6)
-            self.exog_vars['price']=np.log( self.exog_vars['price'] + 1e-6)
-            self.exog_vars_future['price']=np.log( self.exog_vars_future['price'] + 1e-6)
             if self.vYhatOoS is not None:
 
                 self.vYhatIS=np.exp(self.vYhatIS)
@@ -182,7 +178,8 @@ class Forecast_UCM:
         """
         self.iOoS = iOoS
 
-        forecast=self.model.get_forecast(steps=iOoS, exog=self.exog_vars_future[:iOoS])
+        exog_future = self.exog_vars_future[:iOoS] if self.exog_vars_future is not None else None
+        forecast=self.model.get_forecast(steps=iOoS, exog=exog_future)
         self.vYhatIS=self.model.fittedvalues.values
         self.vYhatOoS=forecast.predicted_mean.values
         
